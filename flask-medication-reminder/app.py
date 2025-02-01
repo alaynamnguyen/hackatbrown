@@ -1,30 +1,21 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request, redirect, url_for, session
 
-app = Flask(__name__, template_folder='templates')
+app = Flask(__name__)
+app.secret_key = 'your_secret_key'
 
-@app.route('/')
+@app.route("/")
+def select_avatar():
+    return render_template("select_avatar.html")
+
+@app.route("/set_avatar", methods=["POST"])
+def set_avatar():
+    session["avatar"] = request.form["avatar"]
+    return redirect(url_for("home"))
+
+@app.route("/home")
 def home():
-    return render_template('home.html')
+    avatar = session.get("avatar", "No Avatar Selected")
+    return render_template("home.html", avatar=avatar)
 
-# @app.route('/step1')
-# def step1():
-#     return render_template('step1.html')
-
-# @app.route('/step2')
-# def step2():
-#     return render_template('step2.html')
-
-# @app.route('/step3')
-# def step3():
-#     return render_template('step3.html')
-
-# @app.route('/step4')
-# def step4():
-#     return render_template('step4.html')
-
-# @app.route('/step5')
-# def step5():
-#     return render_template('step5.html')
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(debug=True)

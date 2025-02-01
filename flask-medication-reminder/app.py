@@ -1,9 +1,18 @@
 from flask import Flask, render_template, request, redirect, url_for, session
+import time
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
 
 @app.route("/")
+def welcome():
+    return render_template("welcome.html")
+
+@app.route("/loading")
+def loading():
+    return render_template("loading.html")
+
+@app.route("/select_avatar")
 def select_avatar():
     return render_template("select_avatar.html")
 

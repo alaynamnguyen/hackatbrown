@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <title>Step 3 - Medication Reminder</title>
+</head>
+<body>
+    {% include 'base.html' %}
+    <div class="container">
+        <h1>Step 3: Medication Reminder</h1>
+        <p>In this step, we will help you understand how to take your medications correctly.</p>
+        
+        <h2>Instructions:</h2>
+        <ul>
+            <li>Make sure to take your medication at the same time every day.</li>
+            <li>Use a pill organizer to keep track of your doses.</li>
+            <li>Set reminders on your phone or use a calendar.</li>
+        </ul>
+
+        <a href="{{ url_for('step4') }}" class="btn">Next Step</a>
+    </div>
+    <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
+</body>
+</html>

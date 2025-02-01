@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <title>Step 4 - Medication Reminder</title>
+</head>
+<body>
+    {% include 'base.html' %}
+    <div class="container">
+        <h1>Step 4: Additional Instructions</h1>
+        <p>In this step, we will provide you with more information about your medication.</p>
+        <ul>
+            <li>Make sure to take your medication at the prescribed times.</li>
+            <li>Keep track of your doses using a medication chart.</li>
+            <li>If you have any questions, consult your healthcare provider.</li>
+        </ul>
+        <a href="{{ url_for('step5') }}" class="btn">Next: Step 5</a>
+    </div>
+    <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <title>Step 1 - Medication Reminder</title>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Medication Reminder - Step 1</h1>
+            <nav>
+                <ul>
+                    <li><a href="{{ url_for('home') }}">Home</a></li>
+                    <li><a href="{{ url_for('step1') }}">Step 1</a></li>
+                    <li><a href="{{ url_for('step2') }}">Step 2</a></li>
+                    <li><a href="{{ url_for('step3') }}">Step 3</a></li>
+                    <li><a href="{{ url_for('step4') }}">Step 4</a></li>
+                    <li><a href="{{ url_for('step5') }}">Step 5</a></li>
+                </ul>
+            </nav>
+        </header>
+        <main>
+            <h2>Welcome to Step 1!</h2>
+            <p>In this step, we will help you understand the importance of taking your medications.</p>
+            <p>Please read the instructions carefully and follow the prompts.</p>
+            <a href="{{ url_for('step2') }}" class="next-button">Next Step</a>
+        </main>
+        <footer>
+            <p>&copy; 2023 Medication Reminder App</p>
+        </footer>
+    </div>
+    <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
+</body>
+</html>

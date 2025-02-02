@@ -6,6 +6,7 @@ import os
 import cv2
 import mediapipe as mp
 import numpy as np
+import openai
 
 app = Flask(__name__)
 
@@ -22,6 +23,8 @@ mp_face_mesh = mp.solutions.face_mesh
 hands = mp_hands.Hands(min_detection_confidence=0.7, min_tracking_confidence=0.7)
 pose = mp_pose.Pose(min_detection_confidence=0.7, min_tracking_confidence=0.7)
 face_mesh = mp_face_mesh.FaceMesh(min_detection_confidence=0.7, min_tracking_confidence=0.7)
+
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 @app.route('/')
 def index():
@@ -133,6 +136,48 @@ def update_progress(username):
     )
     
     return jsonify({"message": "Progress updated successfully"})
+
+@app.route("/api/chat", methods=["POST"])
+def chat():
+    if "audio" in request.files:  # Voice message processing
+        audio_file = request.files["audio"]
+
+        # Save temporary file
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".webm") as temp_audio:
+            audio_path = temp_audio.name
+            audio_file.save(audio_path)
+
+        # Convert audio to text
+        recognizer = sr.Recognizer()
+        with sr.AudioFile(audio_path) as source:
+            audio_data = recognizer.record(source)
+            try:
+                user_message = recognizer.recognize_google(audio_data)
+            except sr.UnknownValueError:
+                return jsonify({"reply": "I couldn't understand that. Try speaking clearly."})
+        
+        os.remove(audio_path)
+
+    else:  # Text message processing
+        data = request.json
+        user_message = data.get("message", "")
+
+        if not user_message:
+            return jsonify({"error": "No message provided"}), 400
+
+    try:
+        # OpenAI GPT-4 Chat Completion
+        response = openai.ChatCompletion.create(
+            model="gpt-4",
+            messages=[{"role": "system", "content": "You are Bruno the Bear, a friendly and comforting companion for children recovering from surgery."},
+                      {"role": "user", "content": user_message}]
+        )
+
+        reply = response["choices"][0]["message"]["content"]
+
+        return jsonify({"reply": reply})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
     app.run(debug=True, port=5001)

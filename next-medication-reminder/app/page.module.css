@@ -256,3 +256,10 @@
 .choiceButton:hover {
     background: lightgray;
 }
+
+/* Disabled Button (For Completed Tasks) */
+.disabledButton {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: lightgray;
+}

@@ -15,3 +15,5 @@ instance/
 
 # VS Code settings
 .vscode/
+
+./backend/.env

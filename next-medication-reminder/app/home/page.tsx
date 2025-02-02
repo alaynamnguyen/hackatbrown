@@ -6,7 +6,7 @@ import styles from "../page.module.css";
 
 export default function HomePage() {
     const router = useRouter();
-    const [avatar, setAvatar] = useState("1"); // Default avatar
+    const [avatar, setAvatar] = useState("1");
     const [name, setName] = useState("");
     const [currentDay, setCurrentDay] = useState(1);
     const [avatarName, setAvatarName] = useState("Bruno Bear");
@@ -14,7 +14,7 @@ export default function HomePage() {
     // Hardcoded stats
     const EXP = 120;
     const money = 50;
-    const totalDays = 5;
+    const totalTasks = 4;
 
     // Avatar options
     const avatarNames = ["Peppa", "Bluey", "Patrick"];
@@ -31,6 +31,9 @@ export default function HomePage() {
         { text: "❤️ Log how you're feeling", completed: false },
         { text: `😊 Check in with ${avatarName}`, completed: false },
     ]);
+
+    // Track completed tasks
+    const currentTaskCount = tasks.filter((task) => task.completed).length;
 
     // Typing effect states
     const [messageIndex, setMessageIndex] = useState(0);
@@ -105,10 +108,12 @@ export default function HomePage() {
 
     // Handle checkbox toggle
     const toggleTask = (index: number): void => {
-        const updatedTasks = [...tasks];
-        updatedTasks[index].completed = !updatedTasks[index].completed;
-        setTasks(updatedTasks);
-        sessionStorage.setItem("tasks", JSON.stringify(updatedTasks));
+        if (!tasks[index].completed) {
+            const updatedTasks = [...tasks];
+            updatedTasks[index].completed = true;
+            setTasks(updatedTasks);
+            sessionStorage.setItem("tasks", JSON.stringify(updatedTasks));
+        }
     };
 
     return (
@@ -118,7 +123,9 @@ export default function HomePage() {
                 <div className={styles.progressTrack}>
                     <div
                         className={styles.progressBar}
-                        style={{ width: `${(currentDay / totalDays) * 100}%` }}
+                        style={{
+                            width: `${(currentTaskCount / totalTasks) * 100}%`,
+                        }}
                     />
                 </div>
             </div>
@@ -135,7 +142,7 @@ export default function HomePage() {
                     className={styles.avatarImage}
                 />
 
-                {/* Speech Bubble (Positioned Upper-Right) */}
+                {/* Speech Bubble */}
                 <div className={styles.speechBubble}>
                     <p>{typedMessage}</p>
                 </div>
@@ -146,18 +153,20 @@ export default function HomePage() {
                         {tasks.map((task, index) => (
                             <button
                                 key={index}
-                                className={styles.choiceButton}
+                                className={`${styles.choiceButton} ${
+                                    task.completed ? styles.disabledButton : ""
+                                }`}
                                 onClick={() => toggleTask(index)}
+                                disabled={task.completed}
                             >
-                                {task.text.split(" ")[0]}{" "}
-                                {/* Extracts only the emoji */}
+                                {task.text.split(" ")[0]}
                             </button>
                         ))}
                     </div>
                 )}
             </div>
 
-            {/* To-Do List (Remains Visible) */}
+            {/* To-Do List */}
             <div className={styles.todoContainer}>
                 <h2 className={styles.todoTitle}>To-Do List</h2>
                 <ul className={styles.todoList}>
@@ -166,7 +175,7 @@ export default function HomePage() {
                             <input
                                 type="checkbox"
                                 checked={task.completed}
-                                onChange={() => toggleTask(index)}
+                                readOnly
                                 className={styles.checkbox}
                             />
                             <span

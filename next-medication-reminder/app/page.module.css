@@ -523,6 +523,99 @@
     margin-top: 20px;
 }
 
+/* Chat Container */
+.chatContainer {
+    width: 100%;
+    max-width: 600px;
+    height: 350px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 12px;
+    padding: 15px;
+    overflow-y: auto;
+    margin-bottom: 15px;
+}
+
+/* Bruno’s Messages */
+.brunoMessage {
+    background: #f4c542;
+    color: black;
+    padding: 12px;
+    border-radius: 12px;
+    width: fit-content;
+    max-width: 80%;
+    margin-bottom: 10px;
+    align-self: flex-start;
+}
+
+/* User Messages */
+.userMessage {
+    background: #007bff;
+    color: white;
+    padding: 12px;
+    border-radius: 12px;
+    width: fit-content;
+    max-width: 80%;
+    margin-bottom: 10px;
+    align-self: flex-end;
+}
+
+/* Chat Input */
+.chatInput {
+    width: 75%;
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+    font-size: 1rem;
+    margin-right: 8px;
+}
+
+/* Chat Buttons */
+.sendButton,
+.finishButton,
+.cancelButton {
+    font-size: 1rem;
+    padding: 10px 16px;
+    border-radius: 8px;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.sendButton {
+    background-color: #007bff;
+    color: white;
+}
+
+.sendButton:hover {
+    background-color: #0056b3;
+}
+
+.finishButton {
+    background-color: #28a745;
+    color: white;
+}
+
+.finishButton:hover {
+    background-color: #218838;
+}
+
+.cancelButton {
+    background-color: #dc3545;
+    color: white;
+}
+
+.cancelButton:hover {
+    background-color: #c82333;
+}
+
+/* Button Container */
+.buttonContainer {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 10px;
+}
 .finishButton {
     background-color: #28a745;
     color: white;

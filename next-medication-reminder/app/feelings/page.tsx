@@ -1,18 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useContext } from "react";
 import styles from "../page.module.css";
 import { useRouter } from "next/navigation";
+import { TaskStatusContext } from "../TaskStatusContext"; // adjust the path as needed
 
 export default function FeelingsPage() {
     const [selectedFeeling, setSelectedFeeling] = useState("");
     const router = useRouter();
+    const { setWaterTaskComplete } = useContext(TaskStatusContext);
 
-    interface Feeling {
-        feeling: string;
-    }
-
-    const handleSelectFeeling = (feeling: Feeling["feeling"]) => {
+    const handleSelectFeeling = (feeling: string) => {
         setSelectedFeeling(feeling);
     };
 
@@ -20,6 +18,8 @@ export default function FeelingsPage() {
         alert(
             "Thanks for sharing! We'll keep this so that your parents and doctor will be able to help you."
         );
+        // Mark the feelings task as complete by setting waterTaskComplete to true.
+        setWaterTaskComplete(true);
         router.push("/home");
     };
 
@@ -29,8 +29,6 @@ export default function FeelingsPage() {
                 <h1 className={styles.furnitureTitle}>
                     How are you feeling today?
                 </h1>
-
-                {/* Display Feelings Icons */}
                 <div className={styles.row}>
                     <div className={styles.rowItems}>
                         {["😡", "😢", "😐", "😊", "😁", "😴"].map(
@@ -48,8 +46,6 @@ export default function FeelingsPage() {
                         )}
                     </div>
                 </div>
-
-                {/* Display Selected Feeling Information */}
                 {selectedFeeling && (
                     <div className={styles.selectedItemInfo}>
                         <h3>Selected Feeling: {selectedFeeling}</h3>

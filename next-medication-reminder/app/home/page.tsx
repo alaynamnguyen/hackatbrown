@@ -1,6 +1,5 @@
-"use client";
-import { useContext, useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useContext, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import styles from "../page.module.css";
 import { TaskStatusContext } from "../TaskStatusContext"; // adjust the path as needed
 import { motion } from "framer-motion";
@@ -14,15 +13,16 @@ interface Task {
 
 export default function HomePage() {
     const router = useRouter();
-
     const {
         pillDetected,
         setPillDetected,
         checkInComplete,
         setCheckInComplete,
+        waterTaskComplete,
+        setWaterTaskComplete,
     } = useContext(TaskStatusContext);
 
-    // Default tasks
+    // Default tasks array
     const defaultTasks: Task[] = [
         {
             text: "💊 Take 1 pill of ibuprofen",
@@ -85,6 +85,20 @@ export default function HomePage() {
         }
     }, [checkInComplete, setCheckInComplete]);
 
+    // When waterTaskComplete is true, update the "Log how you're feeling" task.
+    useEffect(() => {
+        if (waterTaskComplete === true) {
+            setTasks((prevTasks) =>
+                prevTasks.map((task) =>
+                    task.text.includes("❤️")
+                        ? { ...task, completed: true }
+                        : task
+                )
+            );
+            setWaterTaskComplete(null);
+        }
+    }, [waterTaskComplete, setWaterTaskComplete]);
+
     // Other state values
     const [avatar, setAvatar] = useState("1");
     const [name, setName] = useState("");
@@ -98,18 +112,20 @@ export default function HomePage() {
     const totalTasks = 4;
     const avatarNames = ["Peppa", "Bluey", "Patrick"];
 
-    // Typing effect and display state
+    // ─ Typing effect state ─
     const [messageIndex, setMessageIndex] = useState(0);
     const [typedMessage, setTypedMessage] = useState("");
     const [showChoices, setShowChoices] = useState(false);
-    // We'll use resetMessage as a flag to trigger the finishing process once.
     const [resetMessage, setResetMessage] = useState(false);
     const [praiseMessage, setPraiseMessage] = useState<string | null>(null);
 
-    const messages = [
-        `Hi ${name || "friend"}, it's good to see you today!`,
-        "Let's both get better soon! Which of these do you want to do?",
-    ];
+    // Memoize messages so they remain stable during typing.
+    const computedMessages = useMemo(() => {
+        return [
+            `Hi ${name || "friend"}, it's good to see you today!`,
+            "Let's both get better soon! Which of these do you want to do?",
+        ];
+    }, [name]);
 
     // Load stored data (avatar, name, etc.)
     useEffect(() => {
@@ -130,21 +146,24 @@ export default function HomePage() {
         setMoney(parseInt(savedMoney));
     }, []);
 
-    // Typing effect for the speech bubble
+    // ─ Typing effect for the speech bubble ─
     useEffect(() => {
-        if (messageIndex >= messages.length) {
+        if (messageIndex >= computedMessages.length) {
             setShowChoices(true);
             return;
         }
-        setTypedMessage(""); // Reset the message
+        setTypedMessage(""); // Reset the message before typing the new one.
         let charIndex = 0;
         const interval = setInterval(() => {
-            setTypedMessage((prev) => prev + messages[messageIndex][charIndex]);
+            setTypedMessage(
+                (prev) =>
+                    prev + computedMessages[messageIndex].charAt(charIndex)
+            );
             charIndex++;
-            if (charIndex === messages[messageIndex].length) {
+            if (charIndex === computedMessages[messageIndex].length) {
                 clearInterval(interval);
                 setTimeout(() => {
-                    if (messageIndex < messages.length - 1) {
+                    if (messageIndex < computedMessages.length - 1) {
                         setMessageIndex((prev) => prev + 1);
                     } else {
                         setShowChoices(true);
@@ -153,12 +172,10 @@ export default function HomePage() {
             }
         }, 50);
         return () => clearInterval(interval);
-    }, [messageIndex, name]);
+    }, [messageIndex, computedMessages]);
 
-    // ★ FINISHING PROCESS ★
-    // When every task is complete, trigger the finishing process.
+    // ─ Finishing Process ─
     useEffect(() => {
-        // Only trigger if we haven't already started finishing (resetMessage is false)
         if (
             !resetMessage &&
             tasks.length > 0 &&
@@ -170,7 +187,6 @@ export default function HomePage() {
             );
             setTimeout(() => {
                 alert("🎉 Congrats! You earned $50 and 120 EXP! 🎉");
-                // Update stats and persist them.
                 setExp((prevExp) => {
                     const newExp = prevExp + earnedExp;
                     sessionStorage.setItem("exp", newExp.toString());
@@ -186,11 +202,9 @@ export default function HomePage() {
                     sessionStorage.setItem("currentDay", newDay.toString());
                     return newDay;
                 });
-                // Reset tasks to default.
                 setTasks(defaultTasks);
                 setResetMessage(false);
-                // Reset speech message back to the first message.
-                setTypedMessage(messages[0]);
+                setTypedMessage(computedMessages[0]);
             }, 3000);
         }
     }, [
@@ -200,13 +214,12 @@ export default function HomePage() {
         earnedExp,
         earnedMoney,
         defaultTasks,
-        messages,
+        computedMessages,
     ]);
 
-    // ─── HANDLER FUNCTIONS FOR EACH TASK ──────────────────────────────
-
+    // ─ Handler Functions for Each Task ─
     const handlePillTask = () => {
-        router.push("/takePill"); // Navigate to the Take Pill page.
+        router.push("/takePill");
     };
 
     const handleWaterTask = () => {
@@ -214,21 +227,20 @@ export default function HomePage() {
     };
 
     const handleMoodTask = () => {
-        toggleTask(2);
+        router.push("/feelings");
     };
 
     const handleCheckInTask = () => {
-        router.push("/brunoCheckIn"); // Navigate to the Bruno Check‑in page.
+        router.push("/brunoCheckIn");
     };
 
     const toggleTask = (index: number): void => {
         if (!tasks[index].completed) {
-            setTasks((prevTasks) => {
-                const updatedTasks = prevTasks.map((task, i) =>
+            setTasks((prevTasks) =>
+                prevTasks.map((task, i) =>
                     i === index ? { ...task, completed: true } : task
-                );
-                return updatedTasks;
-            });
+                )
+            );
         }
     };
 

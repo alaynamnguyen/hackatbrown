@@ -54,29 +54,18 @@
     cursor: pointer;
 }
 
-/* Avatar Container (Bottom-Left with Padding) */
-.avatarContainerHome {
-    position: fixed;
-    bottom: 100px; /* Adds 100px padding from bottom */
-    left: 50px; /* Adds 50px padding from left */
-    width: 300px; /* Adjust width as needed */
-    height: 300px; /* Adjust height as needed */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-/* Avatar Image */
-.avatarHome {
-    width: 100%; /* Ensures it scales inside the container */
-    height: auto;
-    object-fit: contain;
-}
-
 .avatarText {
     color: white;
     font-size: 1.5rem;
     margin-top: 1rem;
+}
+
+/* Avatar Image */
+.avatarImage {
+    width: 300px; /* Adjust size as needed */
+    height: auto;
+    border-radius: 10px;
+    margin-top: 10px;
 }
 
 /* Page Wrapper */
@@ -92,63 +81,131 @@
 .progressContainer {
     position: fixed;
     top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
     width: 80%;
-    height: 10px;
+    height: 14px; /* Adjusted for cleaner look */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Progress Track */
+.progressTrack {
+    width: 100%;
+    height: 12px; /* Thicker bar */
     background: rgba(255, 255, 255, 0.3);
-    border-radius: 5px;
+    border-radius: 6px;
     overflow: hidden;
 }
 
-/* Progress Bar */
+/* Progress Bar (Dynamic Fill) */
 .progressBar {
     height: 100%;
     background: gold;
-    transform-origin: left;
+    transition: width 0.5s ease-in-out;
 }
 
-/* Checkpoints */
-.checkpoints {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-    position: absolute;
-    top: -20px;
-    font-size: 14px;
+/* To-Do List */
+.todoContainer {
+    position: fixed;
+    top: 80px;
+    left: 50px;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 15px;
+    border-radius: 10px;
+    width: 280px;
     color: white;
+    font-family: Arial, sans-serif;
 }
 
-.checkpoint {
-    position: relative;
-    text-align: center;
-    width: 20%;
+.todoTitle {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
 }
 
-/* Horizontal Scroll Section */
-.scrollContainer {
+.todoList {
+    list-style: none;
+    padding: 0;
+}
+
+/* To-Do List Items */
+.todoItem {
     display: flex;
-    flex-direction: row;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    width: 100vw;
-    height: 100vh;
-    scrollbar-width: none;
-}
-
-.scrollContainer::-webkit-scrollbar {
-    display: none;
-}
-
-/* Individual Sections */
-.section {
-    flex: none;
-    width: 100vw;
-    height: 100vh;
-    display: flex;
-    justify-content: center;
     align-items: center;
-    scroll-snap-align: start;
-    font-size: 2rem;
+    font-size: 1.2rem;
+    gap: 10px;
+    margin: 5px 0;
+}
+
+/* Checkbox Styling */
+.checkbox {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+/* Completed Task Style */
+.completedTask {
+    text-decoration: line-through;
+    color: gray;
+}
+
+/* Bottom Right Container (Aligns Stats Box + Shop Button) */
+.bottomRightContainer {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 220px; /* Uniform width */
+    gap: 12px; /* Adds space between Stats Box and Shop Button */
+}
+
+/* Stats Box */
+.statsBox {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 12px; /* Slightly reduce padding */
+    border-radius: 10px;
     color: white;
-    background: url("/background.png") no-repeat center center;
-    background-size: cover;
+    font-family: Arial, sans-serif;
+    text-align: center;
+    font-size: 1.1rem;
+    font-weight: bold;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px; /* Reduces spacing between elements */
+    line-height: 1.2; /* Reduces vertical spacing between lines */
+}
+
+/* Ensure individual stat items are closer */
+.statsBox p {
+    margin: 3px 0; /* Reduces top & bottom margin */
+}
+
+/* Shop Button */
+.shopButton {
+    width: 100%;
+    height: 50px;
+    background-color: gold;
+    color: black;
+    font-size: 1.2rem;
+    font-weight: bold;
+    padding: 10px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2); /* Adds subtle depth */
+}
+
+.shopButton:hover {
+    background-color: orange;
+    transform: scale(1.05); /* Slight hover effect */
 }

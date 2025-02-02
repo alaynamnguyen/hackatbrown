@@ -64,6 +64,11 @@ export default function FurnitureShopPage() {
         sessionStorage.setItem("selectedFurniture", `${category}: ${itemName}`);
     };
 
+    const handlePurchase = () => {
+        alert(`Thank you for purchasing the ${selectedItem}!`);
+        // Additional purchase logic can go here (e.g., redirecting to a payment page)
+    };
+
     return (
         <div className={styles.container}>
             <div className={styles.overlay}>
@@ -142,6 +147,7 @@ export default function FurnitureShopPage() {
                             <p>Price: ${selectedPrice}</p>
                             <button
                                 className={styles.purchaseButton}
+                                onClick={handlePurchase}
                                 disabled={selectedPrice > money} // Disable if too expensive
                             >
                                 Purchase

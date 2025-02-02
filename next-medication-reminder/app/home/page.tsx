@@ -20,10 +20,8 @@ export default function HomePage() {
         setCheckInComplete,
     } = useContext(TaskStatusContext);
 
-    // -------------------------------------------------------------------
-    // TASK STATE (with initial tasks)
-    // Note: The first task now is the pill detection task.
-    const [tasks, setTasks] = useState<Task[]>([
+    // Default tasks
+    const defaultTasks: Task[] = [
         {
             text: "💊 Take 1 pill of ibuprofen",
             completed: false,
@@ -44,38 +42,48 @@ export default function HomePage() {
             completed: false,
             praise: "Great job checking in!",
         },
-    ]);
+    ];
 
-    // When the shared context indicates pill detection is complete,
-    // mark the pill task as complete and then reset the variable.
+    // Lazy initialize tasks from sessionStorage or defaultTasks
+    const [tasks, setTasks] = useState<Task[]>(() => {
+        const saved = sessionStorage.getItem("tasks");
+        return saved ? JSON.parse(saved) : defaultTasks;
+    });
+
+    // Always save tasks changes into sessionStorage.
+    useEffect(() => {
+        sessionStorage.setItem("tasks", JSON.stringify(tasks));
+    }, [tasks]);
+
+    // When pillDetected is true, update the pill task.
     useEffect(() => {
         if (pillDetected === true) {
-            const updatedTasks = tasks.map((task) =>
-                task.text.includes("💊") ? { ...task, completed: true } : task
+            setTasks((prevTasks) =>
+                prevTasks.map((task) =>
+                    task.text.includes("💊")
+                        ? { ...task, completed: true }
+                        : task
+                )
             );
-            setTasks(updatedTasks);
-            sessionStorage.setItem("tasks", JSON.stringify(updatedTasks));
-            // Reset so that we don’t re‐process it on re‑render
             setPillDetected(null);
         }
-    }, [pillDetected, tasks, setPillDetected]);
+    }, [pillDetected, setPillDetected]);
 
-    // Similarly, when the shared context indicates check‑in is complete,
-    // mark the check‑in task as complete and then reset the variable.
+    // When checkInComplete is true, update the check‑in task.
     useEffect(() => {
         if (checkInComplete === true) {
-            const updatedTasks = tasks.map((task) =>
-                task.text.includes("Check in")
-                    ? { ...task, completed: true }
-                    : task
+            setTasks((prevTasks) =>
+                prevTasks.map((task) =>
+                    task.text.includes("Check in")
+                        ? { ...task, completed: true }
+                        : task
+                )
             );
-            setTasks(updatedTasks);
-            sessionStorage.setItem("tasks", JSON.stringify(updatedTasks));
             setCheckInComplete(null);
         }
-    }, [checkInComplete, tasks, setCheckInComplete]);
+    }, [checkInComplete, setCheckInComplete]);
 
-    // Other state values (avatar, name, stats, etc.)
+    // Other state values
     const [avatar, setAvatar] = useState("1");
     const [name, setName] = useState("");
     const [currentDay, setCurrentDay] = useState(1);
@@ -83,36 +91,32 @@ export default function HomePage() {
     const [exp, setExp] = useState(120);
     const [money, setMoney] = useState(50);
 
-    // Hardcoded stats
     const earnedExp = 120;
     const earnedMoney = 50;
     const totalTasks = 4;
-
-    // Avatar options
     const avatarNames = ["Peppa", "Bluey", "Patrick"];
 
-    // Typing effect states
+    // Typing effect and display state
     const [messageIndex, setMessageIndex] = useState(0);
     const [typedMessage, setTypedMessage] = useState("");
     const [showChoices, setShowChoices] = useState(false);
+    // We'll use resetMessage as a flag to trigger the finishing process once.
     const [resetMessage, setResetMessage] = useState(false);
     const [praiseMessage, setPraiseMessage] = useState<string | null>(null);
 
-    // Messages for the speech bubble
     const messages = [
         `Hi ${name || "friend"}, it's good to see you today!`,
         "Let's both get better soon! Which of these do you want to do?",
     ];
 
+    // Load stored data (avatar, name, etc.)
     useEffect(() => {
-        // Load stored progress from sessionStorage
         const selectedAvatar = sessionStorage.getItem("selectedAvatar") || "1";
         const userName = sessionStorage.getItem("userName") || "";
         const savedDay = sessionStorage.getItem("currentDay");
         const savedExp = sessionStorage.getItem("exp") || "120";
         const savedMoney = sessionStorage.getItem("money") || "50";
 
-        // Ensure valid avatar selection
         const avatarIndex = parseInt(selectedAvatar) - 1;
         const resolvedAvatarName = avatarNames[avatarIndex] || "Bruno Bear";
 
@@ -120,37 +124,8 @@ export default function HomePage() {
         setName(userName);
         setCurrentDay(savedDay ? parseInt(savedDay) : 1);
         setAvatarName(resolvedAvatarName);
-
-        // Update tasks with the correct avatar name for the check‑in task
-        const savedTasks = sessionStorage.getItem("tasks");
         setExp(parseInt(savedExp));
         setMoney(parseInt(savedMoney));
-        setTasks(
-            savedTasks
-                ? JSON.parse(savedTasks)
-                : [
-                      {
-                          text: "💊 Take 1 pill of ibuprofen",
-                          completed: false,
-                          praise: "Great job taking your medication safely!",
-                      },
-                      {
-                          text: "💧 Drink 1 glass of water",
-                          completed: false,
-                          praise: "Great job staying hydrated!",
-                      },
-                      {
-                          text: "❤️ Log how you're feeling",
-                          completed: false,
-                          praise: "Great job letting me know how you feel!",
-                      },
-                      {
-                          text: `😊 Check in with ${resolvedAvatarName}`,
-                          completed: false,
-                          praise: "Great job checking in!",
-                      },
-                  ]
-        );
     }, []);
 
     // Typing effect for the speech bubble
@@ -159,13 +134,11 @@ export default function HomePage() {
             setShowChoices(true);
             return;
         }
-
         setTypedMessage(""); // Reset the message
         let charIndex = 0;
         const interval = setInterval(() => {
             setTypedMessage((prev) => prev + messages[messageIndex][charIndex]);
             charIndex++;
-
             if (charIndex === messages[messageIndex].length) {
                 clearInterval(interval);
                 setTimeout(() => {
@@ -177,113 +150,92 @@ export default function HomePage() {
                 }, 1000);
             }
         }, 50);
-
         return () => clearInterval(interval);
     }, [messageIndex, name]);
 
+    // ★ FINISHING PROCESS ★
+    // When every task is complete, trigger the finishing process.
+    useEffect(() => {
+        // Only trigger if we haven't already started finishing (resetMessage is false)
+        if (
+            !resetMessage &&
+            tasks.length > 0 &&
+            tasks.every((task) => task.completed)
+        ) {
+            setResetMessage(true);
+            setTypedMessage(
+                `You've completed all of your tasks for today, ${name}! I'll see you again tomorrow. 🎉`
+            );
+            setTimeout(() => {
+                alert("🎉 Congrats! You earned $50 and 120 EXP! 🎉");
+                // Update stats and persist them.
+                setExp((prevExp) => {
+                    const newExp = prevExp + earnedExp;
+                    sessionStorage.setItem("exp", newExp.toString());
+                    return newExp;
+                });
+                setMoney((prevMoney) => {
+                    const newMoney = prevMoney + earnedMoney;
+                    sessionStorage.setItem("money", newMoney.toString());
+                    return newMoney;
+                });
+                setCurrentDay((prevDay) => {
+                    const newDay = prevDay + 1;
+                    sessionStorage.setItem("currentDay", newDay.toString());
+                    return newDay;
+                });
+                // Reset tasks to default.
+                setTasks(defaultTasks);
+                setResetMessage(false);
+                // Reset speech message back to the first message.
+                setTypedMessage(messages[0]);
+            }, 3000);
+        }
+    }, [
+        tasks,
+        resetMessage,
+        name,
+        earnedExp,
+        earnedMoney,
+        defaultTasks,
+        messages,
+    ]);
+
     // ─── HANDLER FUNCTIONS FOR EACH TASK ──────────────────────────────
 
-    // 1. Pill detection (medication) task handler.
-    //    Route to the Take Pill page.
     const handlePillTask = () => {
-        router.push("/takePill"); // No query parameter now!
+        router.push("/takePill"); // Navigate to the Take Pill page.
     };
 
-    // 2. Water task handler (skeleton)
     const handleWaterTask = () => {
-        // Additional logic for water task can be added here.
         toggleTask(1);
     };
 
-    // 3. Mood logging task handler (skeleton)
     const handleMoodTask = () => {
-        // Additional logic for mood logging can be added here.
         toggleTask(2);
     };
 
-    // 4. Check in with avatar task handler:
-    //    Route to the Bruno Check‑in page.
     const handleCheckInTask = () => {
-        router.push("/brunoCheckIn"); // No query parameters now!
+        router.push("/brunoCheckIn"); // Navigate to the Bruno Check‑in page.
     };
 
-    // Generic toggler for tasks (used by some handlers)
     const toggleTask = (index: number): void => {
         if (!tasks[index].completed) {
-            const updatedTasks = [...tasks];
-            updatedTasks[index].completed = true;
-            setTasks(updatedTasks);
-            sessionStorage.setItem("tasks", JSON.stringify(updatedTasks));
-
-            // Set praise message for the completed task
-            const praise = tasks[index]?.praise || "Great job!";
-            setPraiseMessage(praise);
-            setTypedMessage(praise);
-
-            // If all tasks are complete, reset for the next day
-            if (updatedTasks.every((task) => task.completed)) {
-                setTimeout(() => {
-                    setResetMessage(true);
-                    setTypedMessage(
-                        `You've completed all of your tasks for today, ${name}! I'll see you again tomorrow. 🎉`
-                    );
-
-                    setTimeout(() => {
-                        alert("🎉 Congrats! You earned $50 and 120 EXP! 🎉");
-
-                        // Update stats and save in sessionStorage
-                        setExp((prevExp) => {
-                            const newExp = prevExp + earnedExp;
-                            sessionStorage.setItem("exp", newExp.toString());
-                            return newExp;
-                        });
-
-                        setMoney((prevMoney) => {
-                            const newMoney = prevMoney + earnedMoney;
-                            sessionStorage.setItem(
-                                "money",
-                                newMoney.toString()
-                            );
-                            return newMoney;
-                        });
-
-                        setCurrentDay((prevDay) => {
-                            const newDay = prevDay + 1;
-                            sessionStorage.setItem(
-                                "currentDay",
-                                newDay.toString()
-                            );
-                            return newDay;
-                        });
-
-                        resetTasks();
-                        setResetMessage(false);
-                        setTypedMessage(messages[0]); // Reset speech message
-                    }, 3000);
-                }, 2000);
-            }
+            setTasks((prevTasks) => {
+                const updatedTasks = prevTasks.map((task, i) =>
+                    i === index ? { ...task, completed: true } : task
+                );
+                return updatedTasks;
+            });
         }
     };
 
-    // Array mapping each task to its handler function.
     const taskHandlers = [
         handlePillTask,
         handleWaterTask,
         handleMoodTask,
         handleCheckInTask,
     ];
-
-    // Debug function to reset all tasks manually
-    const resetTasks = () => {
-        const resetTasks = tasks.map((task) => ({
-            ...task,
-            completed: false,
-        }));
-        setTasks(resetTasks);
-        sessionStorage.setItem("tasks", JSON.stringify(resetTasks));
-    };
-
-    // Count of completed tasks (for the progress bar)
     const currentTaskCount = tasks.filter((task) => task.completed).length;
 
     return (
@@ -338,7 +290,10 @@ export default function HomePage() {
 
             {/* Debug Button for Resetting Tasks */}
             <div className={styles.debugContainer}>
-                <button className={styles.debugButton} onClick={resetTasks}>
+                <button
+                    className={styles.debugButton}
+                    onClick={() => setTasks(defaultTasks)}
+                >
                     🔄 Reset Tasks (Debug)
                 </button>
             </div>

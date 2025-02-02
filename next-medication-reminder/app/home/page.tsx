@@ -1,3 +1,5 @@
+"use client";
+
 import { useContext, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import styles from "../page.module.css";
@@ -313,14 +315,14 @@ export default function HomePage() {
             </div>
 
             {/* Debug Button for Resetting Tasks */}
-            <div className={styles.debugContainer}>
+            {/* <div className={styles.debugContainer}>
                 <button
                     className={styles.debugButton}
                     onClick={() => setTasks(defaultTasks)}
                 >
                     🔄 Reset Tasks (Debug)
                 </button>
-            </div>
+            </div> */}
 
             {/* To-Do List */}
             <div className={styles.todoContainer}>

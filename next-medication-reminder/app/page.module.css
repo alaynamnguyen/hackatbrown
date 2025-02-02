@@ -55,7 +55,7 @@
 }
 
 /* Avatar Container (Bottom-Left with Padding) */
-.avatarContainer {
+.avatarContainerHome {
     position: fixed;
     bottom: 100px; /* Adds 100px padding from bottom */
     left: 50px; /* Adds 50px padding from left */

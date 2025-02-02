@@ -1,10 +1,12 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import styles from "../page.module.css";
 
 export default function SelectAvatar() {
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const name = searchParams.get("name");
 
     interface HandleSelect {
         (avatar: string): void;
@@ -12,13 +14,16 @@ export default function SelectAvatar() {
 
     const handleSelect: HandleSelect = (avatar) => {
         sessionStorage.setItem("selectedAvatar", avatar);
+        sessionStorage.setItem("userName", name || "");
         router.push("/home");
     };
 
     return (
         <div className={styles.container}>
             <div className={styles.overlay}>
-                <h1 className={styles.welcomeText}>Select Your Avatar</h1>
+                <h1 className={styles.welcomeText}>
+                    Hi {name}! Select an avatar
+                </h1>
                 <div className={styles.avatarContainer}>
                     <img
                         src="/avatars/a1.png"

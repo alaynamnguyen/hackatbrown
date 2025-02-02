@@ -21,19 +21,19 @@ export default function SelectAvatar() {
                 <h1 className={styles.welcomeText}>Select Your Avatar</h1>
                 <div className={styles.avatarContainer}>
                     <img
-                        src="/a1.png"
+                        src="/avatars/a1.png"
                         alt="Avatar 1"
                         className={styles.avatar}
                         onClick={() => handleSelect("1")}
                     />
                     <img
-                        src="/a2.png"
+                        src="/avatars/a2.png"
                         alt="Avatar 2"
                         className={styles.avatar}
                         onClick={() => handleSelect("2")}
                     />
                     <img
-                        src="/a3.png"
+                        src="/avatars/a3.png"
                         alt="Avatar 3"
                         className={styles.avatar}
                         onClick={() => handleSelect("3")}

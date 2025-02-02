@@ -264,11 +264,33 @@
     background: lightgray;
 }
 
+/* Debug Button */
+.debugContainer {
+    position: fixed;
+    bottom: 100px;
+    right: 900px;
+}
+
+.debugButton {
+    background: red;
+    color: white;
+    font-size: 1rem;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.debugButton:hover {
+    background: darkred;
+}
+
 /* Ensure that the row items are displayed as a grid with 3 items per row */
 .rowItems {
     display: grid;
     grid-template-columns: repeat(3, 1fr); /* 3 items per row */
-    gap: 20px;  /* Space between items */
+    gap: 20px; /* Space between items */
     padding: 10px;
     margin-top: 20px; /* Optional, just to add some space above */
 }
@@ -294,7 +316,10 @@
 
 @media (max-width: 768px) {
     .rowItems {
-        grid-template-columns: repeat(2, 1fr); /* 2 items per row on smaller screens */
+        grid-template-columns: repeat(
+            2,
+            1fr
+        ); /* 2 items per row on smaller screens */
     }
 }
 
@@ -303,7 +328,6 @@
         grid-template-columns: 1fr; /* 1 item per row on very small screens */
     }
 }
-
 
 /* Style for the selected item info */
 .selectedItemInfo {

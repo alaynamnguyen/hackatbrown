@@ -39,6 +39,7 @@ export default function HomePage() {
     const [messageIndex, setMessageIndex] = useState(0);
     const [typedMessage, setTypedMessage] = useState("");
     const [showChoices, setShowChoices] = useState(false);
+    const [resetMessage, setResetMessage] = useState(false);
 
     // Ensure messages load after name is set
     const messages = [
@@ -106,14 +107,40 @@ export default function HomePage() {
         return () => clearInterval(interval);
     }, [messageIndex, name]);
 
-    // Handle checkbox toggle
+    // Handle task completion
     const toggleTask = (index: number): void => {
         if (!tasks[index].completed) {
             const updatedTasks = [...tasks];
             updatedTasks[index].completed = true;
             setTasks(updatedTasks);
             sessionStorage.setItem("tasks", JSON.stringify(updatedTasks));
+
+            // Check if all tasks are complete, then reset for the next day
+            if (updatedTasks.every((task) => task.completed)) {
+                setTimeout(() => {
+                    setResetMessage(true);
+                    setTypedMessage(
+                        "Great job today! I'll see you tomorrow! 🎉"
+                    );
+
+                    setTimeout(() => {
+                        resetTasks();
+                        setResetMessage(false);
+                        setTypedMessage(messages[0]); // Reset message to start
+                    }, 3000);
+                }, 500);
+            }
         }
+    };
+
+    // Debug button to reset all tasks manually
+    const resetTasks = () => {
+        const resetTasks = tasks.map((task) => ({
+            ...task,
+            completed: false,
+        }));
+        setTasks(resetTasks);
+        sessionStorage.setItem("tasks", JSON.stringify(resetTasks));
     };
 
     return (
@@ -133,7 +160,7 @@ export default function HomePage() {
             {/* Main Content */}
             <div className={styles.overlay}>
                 <h1 className={styles.welcomeText}>Welcome, {name}!</h1>
-                <p className={styles.avatarText}>Current Day: {currentDay}</p>
+                <p className={styles.avatarText}>Recovery Day: {currentDay}</p>
 
                 {/* Display Avatar Image */}
                 <img
@@ -148,7 +175,7 @@ export default function HomePage() {
                 </div>
 
                 {/* Task Choices (Emoji Only) */}
-                {showChoices && (
+                {showChoices && !resetMessage && (
                     <div className={styles.choiceContainer}>
                         {tasks.map((task, index) => (
                             <button
@@ -164,6 +191,13 @@ export default function HomePage() {
                         ))}
                     </div>
                 )}
+            </div>
+
+            {/* Debug Button for Resetting Tasks */}
+            <div className={styles.debugContainer}>
+                <button className={styles.debugButton} onClick={resetTasks}>
+                    🔄 Reset Tasks (Debug)
+                </button>
             </div>
 
             {/* To-Do List */}

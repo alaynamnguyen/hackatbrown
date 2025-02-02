@@ -6,7 +6,8 @@ import os
 import cv2
 import mediapipe as mp
 import numpy as np
-import openai
+import requests
+# import speech_recognition as sr
 
 app = Flask(__name__)
 
@@ -24,11 +25,63 @@ hands = mp_hands.Hands(min_detection_confidence=0.7, min_tracking_confidence=0.7
 pose = mp_pose.Pose(min_detection_confidence=0.7, min_tracking_confidence=0.7)
 face_mesh = mp_face_mesh.FaceMesh(min_detection_confidence=0.7, min_tracking_confidence=0.7)
 
-openai.api_key = os.getenv("OPENAI_API_KEY")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+GEMINI_ENDPOINT = f"https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateText?key={GEMINI_API_KEY}"
+
 
 @app.route('/')
 def index():
     return jsonify({"message": "API is running"})
+
+@app.route("/api/chat", methods=["POST"])
+def detect_pil():
+    if "audio" in request.files:  # Voice message processing
+        audio_file = request.files["audio"]
+
+        # Save temporary file
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".webm") as temp_audio:
+            audio_path = temp_audio.name
+            audio_file.save(audio_path)
+
+        # Convert audio to text
+        recognizer = sr.Recognizer()
+        with sr.AudioFile(audio_path) as source:
+            audio_data = recognizer.record(source)
+            try:
+                user_message = recognizer.recognize_google(audio_data)
+            except sr.UnknownValueError:
+                return jsonify({"reply": "I couldn't understand that. Try speaking clearly."})
+        
+        os.remove(audio_path)
+
+    else:  # Text message processing
+        data = request.json
+        user_message = data.get("message", "")
+
+        if not user_message:
+            return jsonify({"error": "No message provided"}), 400
+
+    try:
+        # Call Google Gemini API
+        response = requests.post(
+            GEMINI_ENDPOINT,
+            headers={"Content-Type": "application/json"},
+            json={
+                "contents": [{"parts": [{"text": f"You are Bruno the Bear, a friendly and comforting companion for children recovering from surgery. {user_message}"}]}]
+            }
+        )
+
+        response_json = response.json()
+
+        # Extract response text
+        if "candidates" in response_json and response_json["candidates"]:
+            reply = response_json["candidates"][0]["content"]["parts"][0]["text"]
+        else:
+            reply = "Sorry, I couldn't process that request."
+
+        return jsonify({"reply": reply})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/detect_pill', methods=['POST'])
 def detect_pill():
@@ -136,48 +189,6 @@ def update_progress(username):
     )
     
     return jsonify({"message": "Progress updated successfully"})
-
-@app.route("/api/chat", methods=["POST"])
-def chat():
-    if "audio" in request.files:  # Voice message processing
-        audio_file = request.files["audio"]
-
-        # Save temporary file
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".webm") as temp_audio:
-            audio_path = temp_audio.name
-            audio_file.save(audio_path)
-
-        # Convert audio to text
-        recognizer = sr.Recognizer()
-        with sr.AudioFile(audio_path) as source:
-            audio_data = recognizer.record(source)
-            try:
-                user_message = recognizer.recognize_google(audio_data)
-            except sr.UnknownValueError:
-                return jsonify({"reply": "I couldn't understand that. Try speaking clearly."})
-        
-        os.remove(audio_path)
-
-    else:  # Text message processing
-        data = request.json
-        user_message = data.get("message", "")
-
-        if not user_message:
-            return jsonify({"error": "No message provided"}), 400
-
-    try:
-        # OpenAI GPT-4 Chat Completion
-        response = openai.ChatCompletion.create(
-            model="gpt-4",
-            messages=[{"role": "system", "content": "You are Bruno the Bear, a friendly and comforting companion for children recovering from surgery."},
-                      {"role": "user", "content": user_message}]
-        )
-
-        reply = response["choices"][0]["message"]["content"]
-
-        return jsonify({"reply": reply})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
     app.run(debug=True, port=5001)

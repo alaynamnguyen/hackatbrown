@@ -6,10 +6,10 @@ import styles from "../page.module.css";
 
 export default function HomePage() {
     const router = useRouter();
-    const [avatar, setAvatar] = useState("");
+    const [avatar, setAvatar] = useState("1"); // Default avatar
     const [name, setName] = useState("");
     const [currentDay, setCurrentDay] = useState(1);
-    const [avatarName, setAvatarName] = useState(""); // Avatar name state
+    const [avatarName, setAvatarName] = useState("Bruno Bear");
 
     // Hardcoded stats
     const EXP = 120;
@@ -25,24 +25,40 @@ export default function HomePage() {
         completed: boolean;
     }
 
-    const [tasks, setTasks] = useState<Task[]>([]);
+    const [tasks, setTasks] = useState<Task[]>([
+        { text: "💊 Take 1 pill of ibuprofen", completed: false },
+        { text: "💧 Drink 1 glass of water", completed: false },
+        { text: "❤️ Log how you're feeling", completed: false },
+        { text: `😊 Check in with ${avatarName}`, completed: false },
+    ]);
 
-    // Load stored progress
+    // Typing effect states
+    const [messageIndex, setMessageIndex] = useState(0);
+    const [typedMessage, setTypedMessage] = useState("");
+    const [showChoices, setShowChoices] = useState(false);
+
+    // Ensure messages load after name is set
+    const messages = [
+        `Hi ${name || "friend"}, it's good to see you today!`,
+        "Let's both get better soon! Which of these do you want to do?",
+    ];
+
     useEffect(() => {
-        const selectedAvatar = sessionStorage.getItem("selectedAvatar");
-        const userName = sessionStorage.getItem("userName");
+        // Load stored progress
+        const selectedAvatar = sessionStorage.getItem("selectedAvatar") || "1";
+        const userName = sessionStorage.getItem("userName") || "";
         const savedDay = sessionStorage.getItem("currentDay");
 
         // Ensure valid avatar selection
-        const avatarIndex = selectedAvatar ? parseInt(selectedAvatar) - 1 : 0;
+        const avatarIndex = parseInt(selectedAvatar) - 1;
         const resolvedAvatarName = avatarNames[avatarIndex] || "Bruno Bear";
 
-        setAvatar(selectedAvatar || "1"); // Default to "1" if none is selected
-        setName(userName || "");
+        setAvatar(selectedAvatar);
+        setName(userName);
         setCurrentDay(savedDay ? parseInt(savedDay) : 1);
         setAvatarName(resolvedAvatarName);
 
-        // Load tasks with correct avatar name
+        // Update To-Do list with correct avatar name
         const savedTasks = sessionStorage.getItem("tasks");
         setTasks(
             savedTasks
@@ -58,6 +74,34 @@ export default function HomePage() {
                   ]
         );
     }, []);
+
+    // Typing effect handler
+    useEffect(() => {
+        if (messageIndex >= messages.length) {
+            setShowChoices(true);
+            return;
+        }
+
+        setTypedMessage(""); // Reset message
+        let charIndex = 0;
+        const interval = setInterval(() => {
+            setTypedMessage((prev) => prev + messages[messageIndex][charIndex]);
+            charIndex++;
+
+            if (charIndex === messages[messageIndex].length) {
+                clearInterval(interval);
+                setTimeout(() => {
+                    if (messageIndex < messages.length - 1) {
+                        setMessageIndex((prev) => prev + 1);
+                    } else {
+                        setShowChoices(true);
+                    }
+                }, 1000);
+            }
+        }, 50);
+
+        return () => clearInterval(interval);
+    }, [messageIndex, name]);
 
     // Handle checkbox toggle
     const toggleTask = (index: number): void => {
@@ -90,9 +134,30 @@ export default function HomePage() {
                     alt="Selected Avatar"
                     className={styles.avatarImage}
                 />
+
+                {/* Speech Bubble (Positioned Upper-Right) */}
+                <div className={styles.speechBubble}>
+                    <p>{typedMessage}</p>
+                </div>
+
+                {/* Task Choices (Emoji Only) */}
+                {showChoices && (
+                    <div className={styles.choiceContainer}>
+                        {tasks.map((task, index) => (
+                            <button
+                                key={index}
+                                className={styles.choiceButton}
+                                onClick={() => toggleTask(index)}
+                            >
+                                {task.text.split(" ")[0]}{" "}
+                                {/* Extracts only the emoji */}
+                            </button>
+                        ))}
+                    </div>
+                )}
             </div>
 
-            {/* To-Do List */}
+            {/* To-Do List (Remains Visible) */}
             <div className={styles.todoContainer}>
                 <h2 className={styles.todoTitle}>To-Do List</h2>
                 <ul className={styles.todoList}>

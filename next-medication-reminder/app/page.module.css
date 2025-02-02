@@ -209,3 +209,50 @@
     background-color: orange;
     transform: scale(1.05); /* Slight hover effect */
 }
+
+/* Speech Bubble (Now Positioned in Upper-Right) */
+.speechBubble {
+    position: absolute;
+    top: 30%;
+    right: 15%;
+    background: white;
+    color: black;
+    font-size: 1.2rem;
+    font-weight: bold;
+    padding: 15px;
+    border-radius: 15px;
+    width: 300px;
+    text-align: center;
+    box-shadow: 2px 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* Task Choices (Now Positioned Below Speech Bubble) */
+.choiceContainer {
+    position: absolute;
+    top: 42%;
+    right: 15%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 50px;
+}
+
+.choiceButton {
+    background: white;
+    color: black;
+    font-size: 1.2rem;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: auto;
+}
+
+.choiceButton:hover {
+    background: lightgray;
+}

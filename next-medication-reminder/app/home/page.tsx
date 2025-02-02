@@ -1,33 +1,28 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import styles from "../page.module.css";
 
+// Define the Task interface
+interface Task {
+    text: string;
+    completed: boolean;
+    praise: string;
+}
+
 export default function HomePage() {
+    const searchParams = useSearchParams();
     const router = useRouter();
-    const [avatar, setAvatar] = useState("1");
-    const [name, setName] = useState("");
-    const [currentDay, setCurrentDay] = useState(1);
-    const [avatarName, setAvatarName] = useState("Bruno Bear");
-    const [exp, setExp] = useState(120);
-    const [money, setMoney] = useState(50);
+    // Query parameters for finishing tasks:
+    // - For check‑in tasks we use `complete`
+    // - For pill detection (medication) we use `pillDetected`
+    const complete = searchParams.get("complete");
+    const pillDetectedParam = searchParams.get("pillDetected");
 
-    // Hardcoded stats
-    const earnedExp = 120;
-    const earnedMoney = 50;
-    const totalTasks = 4;
-
-    // Avatar options
-    const avatarNames = ["Peppa", "Bluey", "Patrick"];
-
-    // Task list state
-    interface Task {
-        text: string;
-        completed: boolean;
-        praise: string;
-    }
-
+    // -------------------------------------------------------------------
+    // TASK STATE (with initial tasks)
+    // Note: We are replacing the original medication task handler with our pill detection
     const [tasks, setTasks] = useState<Task[]>([
         {
             text: "💊 Take 1 pill of ibuprofen",
@@ -45,14 +40,51 @@ export default function HomePage() {
             praise: "Great job letting me know how you feel!",
         },
         {
-            text: `😊 Check in with ${avatarName}`,
+            text: "😊 Check in with Bruno Bear",
             completed: false,
             praise: "Great job checking in!",
         },
     ]);
 
-    // Track completed tasks
-    const currentTaskCount = tasks.filter((task) => task.completed).length;
+    // If the check‑in page returns with complete=true, update the "Check in" task
+    useEffect(() => {
+        if (complete === "true") {
+            const updatedTasks = tasks.map((task) =>
+                task.text.includes("Check in")
+                    ? { ...task, completed: true }
+                    : task
+            );
+            setTasks(updatedTasks);
+            sessionStorage.setItem("tasks", JSON.stringify(updatedTasks));
+        }
+    }, [complete, tasks]);
+
+    // If the PillDetectionPage returns with pillDetected=true, update the medication task
+    useEffect(() => {
+        if (pillDetectedParam === "true") {
+            const updatedTasks = tasks.map((task) =>
+                task.text.includes("💊") ? { ...task, completed: true } : task
+            );
+            setTasks(updatedTasks);
+            sessionStorage.setItem("tasks", JSON.stringify(updatedTasks));
+        }
+    }, [pillDetectedParam, tasks]);
+
+    // Other state values (avatar, name, stats, etc.)
+    const [avatar, setAvatar] = useState("1");
+    const [name, setName] = useState("");
+    const [currentDay, setCurrentDay] = useState(1);
+    const [avatarName, setAvatarName] = useState("Bruno Bear");
+    const [exp, setExp] = useState(120);
+    const [money, setMoney] = useState(50);
+
+    // Hardcoded stats
+    const earnedExp = 120;
+    const earnedMoney = 50;
+    const totalTasks = 4;
+
+    // Avatar options
+    const avatarNames = ["Peppa", "Bluey", "Patrick"];
 
     // Typing effect states
     const [messageIndex, setMessageIndex] = useState(0);
@@ -61,14 +93,14 @@ export default function HomePage() {
     const [resetMessage, setResetMessage] = useState(false);
     const [praiseMessage, setPraiseMessage] = useState<string | null>(null);
 
-    // Ensure messages load after name is set
+    // Messages for the speech bubble
     const messages = [
         `Hi ${name || "friend"}, it's good to see you today!`,
         "Let's both get better soon! Which of these do you want to do?",
     ];
 
     useEffect(() => {
-        // Load stored progress
+        // Load stored progress from sessionStorage
         const selectedAvatar = sessionStorage.getItem("selectedAvatar") || "1";
         const userName = sessionStorage.getItem("userName") || "";
         const savedDay = sessionStorage.getItem("currentDay");
@@ -84,7 +116,7 @@ export default function HomePage() {
         setCurrentDay(savedDay ? parseInt(savedDay) : 1);
         setAvatarName(resolvedAvatarName);
 
-        // Update To-Do list with correct avatar name
+        // Update tasks with the correct avatar name for the check‑in task
         const savedTasks = sessionStorage.getItem("tasks");
         setExp(parseInt(savedExp));
         setMoney(parseInt(savedMoney));
@@ -116,14 +148,14 @@ export default function HomePage() {
         );
     }, []);
 
-    // Typing effect handler
+    // Typing effect for the speech bubble
     useEffect(() => {
         if (messageIndex >= messages.length) {
             setShowChoices(true);
             return;
         }
 
-        setTypedMessage(""); // Reset message
+        setTypedMessage(""); // Reset the message
         let charIndex = 0;
         const interval = setInterval(() => {
             setTypedMessage((prev) => prev + messages[messageIndex][charIndex]);
@@ -144,7 +176,33 @@ export default function HomePage() {
         return () => clearInterval(interval);
     }, [messageIndex, name]);
 
-    // Handle task completion with praise message
+    // ─── HANDLER FUNCTIONS FOR EACH TASK ──────────────────────────────
+
+    // 1. Pill detection (medication) task handler.
+    //    Instead of immediately toggling the task, route to the PillDetectionPage.
+    const handlePillTask = () => {
+        router.push(`/takePill?taskIndex=0`);
+    };
+
+    // 2. Water task handler (skeleton)
+    const handleWaterTask = () => {
+        // Additional logic for water task can be added here.
+        toggleTask(1);
+    };
+
+    // 3. Mood logging task handler (skeleton)
+    const handleMoodTask = () => {
+        // Additional logic for mood logging can be added here.
+        toggleTask(2);
+    };
+
+    // 4. Check in with avatar task handler:
+    //    Route to the BrunoCheckIn page.
+    const handleCheckInTask = () => {
+        router.push(`/brunoCheckIn?taskIndex=3`);
+    };
+
+    // Generic toggler for tasks (used by some handlers)
     const toggleTask = (index: number): void => {
         if (!tasks[index].completed) {
             const updatedTasks = [...tasks];
@@ -152,12 +210,12 @@ export default function HomePage() {
             setTasks(updatedTasks);
             sessionStorage.setItem("tasks", JSON.stringify(updatedTasks));
 
-            // Set praise message for completed task
+            // Set praise message for the completed task
             const praise = tasks[index]?.praise || "Great job!";
             setPraiseMessage(praise);
             setTypedMessage(praise);
 
-            // Check if all tasks are complete, then reset for the next day
+            // If all tasks are complete, reset for the next day
             if (updatedTasks.every((task) => task.completed)) {
                 setTimeout(() => {
                     setResetMessage(true);
@@ -168,7 +226,7 @@ export default function HomePage() {
                     setTimeout(() => {
                         alert("🎉 Congrats! You earned $50 and 120 EXP! 🎉");
 
-                        // Update stats and save in session storage
+                        // Update stats and save in sessionStorage
                         setExp((prevExp) => {
                             const newExp = prevExp + earnedExp;
                             sessionStorage.setItem("exp", newExp.toString());
@@ -195,14 +253,22 @@ export default function HomePage() {
 
                         resetTasks();
                         setResetMessage(false);
-                        setTypedMessage(messages[0]); // Reset message to start
+                        setTypedMessage(messages[0]); // Reset speech message
                     }, 3000);
                 }, 2000);
             }
         }
     };
 
-    // Debug button to reset all tasks manually
+    // Array mapping each task to its handler function.
+    const taskHandlers = [
+        handlePillTask,
+        handleWaterTask,
+        handleMoodTask,
+        handleCheckInTask,
+    ];
+
+    // Debug function to reset all tasks manually
     const resetTasks = () => {
         const resetTasks = tasks.map((task) => ({
             ...task,
@@ -211,6 +277,9 @@ export default function HomePage() {
         setTasks(resetTasks);
         sessionStorage.setItem("tasks", JSON.stringify(resetTasks));
     };
+
+    // Count of completed tasks (for the progress bar)
+    const currentTaskCount = tasks.filter((task) => task.completed).length;
 
     return (
         <div className={styles.container}>
@@ -252,7 +321,7 @@ export default function HomePage() {
                                 className={`${styles.choiceButton} ${
                                     task.completed ? styles.disabledButton : ""
                                 }`}
-                                onClick={() => toggleTask(index)}
+                                onClick={() => taskHandlers[index]()}
                                 disabled={task.completed}
                             >
                                 {task.text.split(" ")[0]}
@@ -292,7 +361,7 @@ export default function HomePage() {
                     ))}
                 </ul>
             </div>
-
+            <div onClick={resetTasks}>kaudhkasjhdkajh</div>
             {/* Bottom Right Section (Stats Box + Shop Button) */}
             <div className={styles.bottomRightContainer}>
                 <div className={styles.statsBox}>
@@ -302,7 +371,7 @@ export default function HomePage() {
                 </div>
                 <button
                     className={styles.shopButton}
-                    onClick={() => router.push("/shop")}
+                    onClick={() => router.push(`/shop?money=${money}`)}
                 >
                     🏪 Open Shop
                 </button>

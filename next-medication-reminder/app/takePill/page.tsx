@@ -1,15 +1,18 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import styles from "../page.module.css";
 
 export default function PillDetectionPage() {
     const [recording, setRecording] = useState(false);
-    const [pillTaken, setPillTaken] = useState(null);
-    const videoRef = useRef(null);
-    const mediaRecorderRef = useRef(null);
-    const recordedChunks = useRef([]);
-    const streamRef = useRef(null);
+    // pillTaken is either null, true, or false based on the API result
+    const [pillTaken, setPillTaken] = useState<boolean | null>(null);
+    const videoRef = useRef<HTMLVideoElement | null>(null);
+    const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+    const recordedChunks = useRef<BlobPart[]>([]);
+    const streamRef = useRef<MediaStream | null>(null);
+    const router = useRouter();
 
     useEffect(() => {
         const setupCamera = async () => {
@@ -51,6 +54,7 @@ export default function PillDetectionPage() {
 
     const stopRecording = async () => {
         setRecording(false);
+        if (!mediaRecorderRef.current) return;
         mediaRecorderRef.current.stop();
         mediaRecorderRef.current.onstop = async () => {
             const blob = new Blob(recordedChunks.current, {
@@ -65,11 +69,13 @@ export default function PillDetectionPage() {
                     body: formData,
                 });
                 const result = await response.json();
+                // result.detected is expected to be true or false
                 setPillTaken(result.detected);
             } catch (err) {
                 console.error("Error:", err);
             }
 
+            // Stop the video stream
             if (streamRef.current) {
                 streamRef.current.getTracks().forEach((track) => track.stop());
                 streamRef.current = null;
@@ -119,6 +125,31 @@ export default function PillDetectionPage() {
                 >
                     Pill Taking Detected: {pillTaken ? "YES" : "NO"}
                 </p>
+            )}
+            {/* When a result is available, show Finish (if positive) and Cancel buttons */}
+            {pillTaken !== null && (
+                <div className={styles.resultButtons}>
+                    {pillTaken && (
+                        <button
+                            className={styles.finishButton}
+                            onClick={() =>
+                                router.push(
+                                    `/home?taskIndex=0&pillDetected=true`
+                                )
+                            }
+                        >
+                            ✅ Finish
+                        </button>
+                    )}
+                    <button
+                        className={styles.cancelButton}
+                        onClick={() =>
+                            router.push(`/home?taskIndex=0&pillDetected=false`)
+                        }
+                    >
+                        ❌ Cancel
+                    </button>
+                </div>
             )}
         </div>
     );

@@ -21,7 +21,7 @@ export default function Home() {
     return (
         <div className={styles.container}>
             <div className={styles.overlay}>
-                <h1 className={styles.welcomeText}>Welcome</h1>
+                <h1 className={styles.welcomeText}>Welcome to HealQuest!</h1>
                 <input
                     type="text"
                     placeholder="Enter your name"
@@ -29,7 +29,7 @@ export default function Home() {
                     onChange={(e) => setName(e.target.value)}
                     className={styles.nameInput}
                 />
-                <p className={styles.startText}>Press start to begin</p>
+                <p className={styles.startText}>Press start to begin...</p>
                 <button className={styles.startButton} onClick={handleStart}>
                     Start
                 </button>

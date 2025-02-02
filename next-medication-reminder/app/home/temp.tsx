@@ -7,7 +7,7 @@ import styles from "../page.module.css";
 export default function HomePage() {
     const router = useRouter();
     const [avatar, setAvatar] = useState("1");
-    const [name, setName] = useState("");
+    const [name, setName] = useState("Player"); // Default name to prevent undefined
     const [currentDay, setCurrentDay] = useState(1);
     const [avatarName, setAvatarName] = useState("Bruno Bear");
 
@@ -26,50 +26,28 @@ export default function HomePage() {
         praise: string;
     }
 
-    const [tasks, setTasks] = useState<Task[]>([
-        {
-            text: "💊 Take 1 pill of ibuprofen",
-            completed: false,
-            praise: "Great job taking your medication safely!",
-        },
-        {
-            text: "💧 Drink 1 glass of water",
-            completed: false,
-            praise: "Great job staying hydrated!",
-        },
-        {
-            text: "❤️ Log how you're feeling",
-            completed: false,
-            praise: "Great job letting me know how you feel!",
-        },
-        {
-            text: `😊 Check in with ${avatarName}`,
-            completed: false,
-            praise: "Great job checking in!",
-        },
-    ]);
+    const [tasks, setTasks] = useState<Task[]>([]);
 
     // Track completed tasks
     const currentTaskCount = tasks.filter((task) => task.completed).length;
 
     // Typing effect states
     const [messageIndex, setMessageIndex] = useState(0);
-    const [typedMessage, setTypedMessage] = useState("");
+    const [typedMessage, setTypedMessage] = useState("Loading...");
     const [showChoices, setShowChoices] = useState(false);
     const [resetMessage, setResetMessage] = useState(false);
-    const [praiseMessage, setPraiseMessage] = useState<string | null>(null);
 
     // Ensure messages load after name is set
     const messages = [
-        `Hi ${name || "friend"}, it's good to see you today!`,
+        `Hi ${name}, it's good to see you today!`,
         "Let's both get better soon! Which of these do you want to do?",
     ];
 
     useEffect(() => {
         // Load stored progress
         const selectedAvatar = sessionStorage.getItem("selectedAvatar") || "1";
-        const userName = sessionStorage.getItem("userName") || "";
-        const savedDay = sessionStorage.getItem("currentDay");
+        const userName = sessionStorage.getItem("userName") || "Player"; // Default to "Player"
+        const savedDay = sessionStorage.getItem("currentDay") || "1";
 
         // Ensure valid avatar selection
         const avatarIndex = parseInt(selectedAvatar) - 1;
@@ -77,37 +55,36 @@ export default function HomePage() {
 
         setAvatar(selectedAvatar);
         setName(userName);
-        setCurrentDay(savedDay ? parseInt(savedDay) : 1);
+        setCurrentDay(parseInt(savedDay));
         setAvatarName(resolvedAvatarName);
 
-        // Update To-Do list with correct avatar name
+        // Set default tasks to prevent undefined behavior
+        const defaultTasks = [
+            {
+                text: "💊 Take 1 pill of ibuprofen",
+                completed: false,
+                praise: "Great job taking your medication safely!",
+            },
+            {
+                text: "💧 Drink 1 glass of water",
+                completed: false,
+                praise: "Great job staying hydrated!",
+            },
+            {
+                text: "❤️ Log how you're feeling",
+                completed: false,
+                praise: "Great job letting me know how you feel!",
+            },
+            {
+                text: `😊 Check in with ${resolvedAvatarName}`,
+                completed: false,
+                praise: "Great job checking in!",
+            },
+        ];
+
         const savedTasks = sessionStorage.getItem("tasks");
-        setTasks(
-            savedTasks
-                ? JSON.parse(savedTasks)
-                : [
-                      {
-                          text: "💊 Take 1 pill of ibuprofen",
-                          completed: false,
-                          praise: "Great job taking your medication safely!",
-                      },
-                      {
-                          text: "💧 Drink 1 glass of water",
-                          completed: false,
-                          praise: "Great job staying hydrated!",
-                      },
-                      {
-                          text: "❤️ Log how you're feeling",
-                          completed: false,
-                          praise: "Great job letting me know how you feel!",
-                      },
-                      {
-                          text: `😊 Check in with ${resolvedAvatarName}`,
-                          completed: false,
-                          praise: "Great job checking in!",
-                      },
-                  ]
-        );
+        setTasks(savedTasks ? JSON.parse(savedTasks) : defaultTasks);
+        setTypedMessage(messages[0]); // Ensure proper first message
     }, []);
 
     // Typing effect handler
@@ -136,7 +113,7 @@ export default function HomePage() {
         }, 50);
 
         return () => clearInterval(interval);
-    }, [messageIndex, name]);
+    }, [messageIndex]);
 
     // Handle task completion with praise message
     const toggleTask = (index: number): void => {
@@ -147,10 +124,9 @@ export default function HomePage() {
             sessionStorage.setItem("tasks", JSON.stringify(updatedTasks));
 
             // Set praise message for completed task
-            const praise = tasks[index]?.praise || "Great job!";
-            setTypedMessage(praise);
+            setTypedMessage(tasks[index].praise);
 
-            // Check if all tasks are complete, then increment recovery day
+            // Check if all tasks are complete, then reset for the next day
             if (updatedTasks.every((task) => task.completed)) {
                 setTimeout(() => {
                     setResetMessage(true);
@@ -208,6 +184,11 @@ export default function HomePage() {
                 </button>
             </div>
 
+            {/* Speech Bubble */}
+            <div className={styles.speechBubble}>
+                <p>{typedMessage || "Loading..."}</p>
+            </div>
+
             {/* Task Choices (Emoji Only) */}
             {showChoices && !resetMessage && (
                 <div className={styles.choiceContainer}>
@@ -226,9 +207,19 @@ export default function HomePage() {
                 </div>
             )}
 
-            {/* Speech Bubble */}
-            <div className={styles.speechBubble}>
-                <p>{typedMessage}</p>
+            {/* Bottom Right Section (Stats Box + Shop Button) */}
+            <div className={styles.bottomRightContainer}>
+                <div className={styles.statsBox}>
+                    <p>⭐ EXP: {EXP}</p>
+                    <p>💰 Money: ${money}</p>
+                    <p>📅 Recovery Day: {currentDay}</p>
+                </div>
+                <button
+                    className={styles.shopButton}
+                    onClick={() => router.push("/shop")}
+                >
+                    🏪 Open Shop
+                </button>
             </div>
         </div>
     );

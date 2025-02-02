@@ -263,3 +263,80 @@
     cursor: not-allowed;
     background: lightgray;
 }
+
+/* Ensure that the row items are displayed as a grid with 3 items per row */
+.rowItems {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* 3 items per row */
+    gap: 20px;  /* Space between items */
+    padding: 10px;
+    margin-top: 20px; /* Optional, just to add some space above */
+}
+
+.furnitureItem {
+    text-align: center;
+    border: 1px solid #ddd; /* Optional, adds a border around items */
+    padding: 10px;
+    border-radius: 8px; /* Optional, rounds the corners of each item */
+    transition: transform 0.3s ease-in-out; /* Smooth hover effect */
+}
+
+.furnitureItem:hover {
+    transform: scale(1.05); /* Slight zoom on hover */
+}
+
+.furnitureImage {
+    width: 100%; /* Make sure the image fills the container */
+    max-width: 100px; /* Limit image size */
+    height: auto;
+    object-fit: contain; /* Ensures the image scales without distortion */
+}
+
+@media (max-width: 768px) {
+    .rowItems {
+        grid-template-columns: repeat(2, 1fr); /* 2 items per row on smaller screens */
+    }
+}
+
+@media (max-width: 480px) {
+    .rowItems {
+        grid-template-columns: 1fr; /* 1 item per row on very small screens */
+    }
+}
+
+
+/* Style for the selected item info */
+.selectedItemInfo {
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 20px;
+    margin-top: 20px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.selectedItemInfo h3 {
+    margin: 10px 0;
+    font-size: 24px;
+    color: #333;
+}
+
+.selectedItemInfo p {
+    font-size: 18px;
+    color: #666;
+    margin-bottom: 20px;
+}
+
+/* Style for the purchase button */
+.purchaseButton {
+    padding: 10px 20px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.purchaseButton:hover {
+    background-color: #218838;
+}

@@ -1,8 +1,9 @@
 "use client";
 import { useContext, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import styles from "../page.module.css";
 import { TaskStatusContext } from "../TaskStatusContext"; // adjust the path as needed
+import { motion } from "framer-motion";
 
 // Define the Task interface
 interface Task {
@@ -13,6 +14,7 @@ interface Task {
 
 export default function HomePage() {
     const router = useRouter();
+
     const {
         pillDetected,
         setPillDetected,
@@ -257,11 +259,21 @@ export default function HomePage() {
                 <h1 className={styles.welcomeText}>Welcome, {name}!</h1>
                 <p className={styles.avatarText}>Recovery Day: {currentDay}</p>
 
-                {/* Display Avatar Image */}
-                <img
+                <motion.img
                     src={`/avatars/a${avatar}.png`}
-                    alt="Selected Avatar"
+                    alt="Avatar"
                     className={styles.avatarImage}
+                    animate={{
+                        y: [0, -10, 0],
+                        rotate: [0, 5, -5, 0],
+                        scale: [1, 1.05, 1],
+                    }}
+                    transition={{
+                        repeat: Infinity,
+                        duration: 1,
+                        ease: "easeInOut",
+                    }}
+                    whileHover={{ scale: 1.1 }}
                 />
 
                 {/* Speech Bubble */}

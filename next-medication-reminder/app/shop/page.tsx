@@ -65,8 +65,17 @@ export default function FurnitureShopPage() {
     };
 
     const handlePurchase = () => {
-        alert(`Thank you for purchasing the ${selectedItem}!`);
-        // Additional purchase logic can go here (e.g., redirecting to a payment page)
+        if (selectedPrice !== null && selectedPrice <= money) {
+            const newMoney = money - selectedPrice; // Deduct the item price
+            sessionStorage.setItem("money", newMoney.toString()); // Save new money value
+
+            alert(`Thank you for purchasing the ${selectedItem}!`);
+
+            // Redirect back to home with updated money
+            window.location.href = `/home?money=${newMoney}`;
+        } else {
+            alert("You don't have enough money for this item!");
+        }
     };
 
     return (

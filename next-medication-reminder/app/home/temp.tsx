@@ -148,10 +148,9 @@ export default function HomePage() {
 
             // Set praise message for completed task
             const praise = tasks[index]?.praise || "Great job!";
-            setPraiseMessage(praise);
             setTypedMessage(praise);
 
-            // Check if all tasks are complete, then reset for the next day
+            // Check if all tasks are complete, then increment recovery day
             if (updatedTasks.every((task) => task.completed)) {
                 setTimeout(() => {
                     setResetMessage(true);
@@ -202,42 +201,6 @@ export default function HomePage() {
                 </div>
             </div>
 
-            {/* Main Content */}
-            <div className={styles.overlay}>
-                <h1 className={styles.welcomeText}>Welcome, {name}!</h1>
-                <p className={styles.avatarText}>Recovery Day: {currentDay}</p>
-
-                {/* Display Avatar Image */}
-                <img
-                    src={`/avatars/a${avatar}.png`}
-                    alt="Selected Avatar"
-                    className={styles.avatarImage}
-                />
-
-                {/* Speech Bubble */}
-                <div className={styles.speechBubble}>
-                    <p>{typedMessage}</p>
-                </div>
-
-                {/* Task Choices (Emoji Only) */}
-                {showChoices && !resetMessage && (
-                    <div className={styles.choiceContainer}>
-                        {tasks.map((task, index) => (
-                            <button
-                                key={index}
-                                className={`${styles.choiceButton} ${
-                                    task.completed ? styles.disabledButton : ""
-                                }`}
-                                onClick={() => toggleTask(index)}
-                                disabled={task.completed}
-                            >
-                                {task.text.split(" ")[0]}
-                            </button>
-                        ))}
-                    </div>
-                )}
-            </div>
-
             {/* Debug Button for Resetting Tasks */}
             <div className={styles.debugContainer}>
                 <button className={styles.debugButton} onClick={resetTasks}>
@@ -245,43 +208,27 @@ export default function HomePage() {
                 </button>
             </div>
 
-            {/* To-Do List */}
-            <div className={styles.todoContainer}>
-                <h2 className={styles.todoTitle}>To-Do List</h2>
-                <ul className={styles.todoList}>
+            {/* Task Choices (Emoji Only) */}
+            {showChoices && !resetMessage && (
+                <div className={styles.choiceContainer}>
                     {tasks.map((task, index) => (
-                        <li key={index} className={styles.todoItem}>
-                            <input
-                                type="checkbox"
-                                checked={task.completed}
-                                readOnly
-                                className={styles.checkbox}
-                            />
-                            <span
-                                className={
-                                    task.completed ? styles.completedTask : ""
-                                }
-                            >
-                                {task.text}
-                            </span>
-                        </li>
+                        <button
+                            key={index}
+                            className={`${styles.choiceButton} ${
+                                task.completed ? styles.disabledButton : ""
+                            }`}
+                            onClick={() => toggleTask(index)}
+                            disabled={task.completed}
+                        >
+                            {task.text.split(" ")[0]}
+                        </button>
                     ))}
-                </ul>
-            </div>
-
-            {/* Bottom Right Section (Stats Box + Shop Button) */}
-            <div className={styles.bottomRightContainer}>
-                <div className={styles.statsBox}>
-                    <p>⭐ EXP: {EXP}</p>
-                    <p>💰 Money: ${money}</p>
-                    <p>📅 Recovery Day: {currentDay}</p>
                 </div>
-                <button
-                    className={styles.shopButton}
-                    onClick={() => router.push("/shop")}
-                >
-                    🏪 Open Shop
-                </button>
+            )}
+
+            {/* Speech Bubble */}
+            <div className={styles.speechBubble}>
+                <p>{typedMessage}</p>
             </div>
         </div>
     );

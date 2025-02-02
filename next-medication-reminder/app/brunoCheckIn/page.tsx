@@ -80,21 +80,23 @@ export default function BrunoChatPage() {
         setLoading(true);
 
         try {
-            const response = await fetch("/api/chat", {
+            const response = await fetch("/api/gemini-chat", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ message: input }),
             });
 
             const data = await response.json();
+            const reply = data.reply || "Sorry, I didn't understand that.";
+
             setMessages([
                 ...messages,
                 userMessage,
-                { text: data.reply, sender: "bruno" },
+                { text: reply, sender: "bruno" },
             ]);
-            speak(data.reply);
+            speak(reply);
         } catch (error) {
-            console.error("Error chatting with Bruno:", error);
+            console.error("Error chatting with Gemini:", error);
         }
 
         setLoading(false);

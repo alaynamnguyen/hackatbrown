@@ -54,19 +54,19 @@ export default function BrunoChatPage() {
             formData.append("audio", blob, "voice_message.webm");
 
             try {
-                const response = await fetch("/api/chat", {
+                const response = await fetch("/api/gemini-chat", {
                     method: "POST",
-                    body: formData,
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ message: input }),
                 });
 
                 const data = await response.json();
-                setMessages([
-                    ...messages,
-                    { text: data.reply, sender: "bruno" },
-                ]);
-                speak(data.reply);
+                const reply = data.reply || "Sorry, I didn't understand that.";
+
+                setMessages([...messages, { text: reply, sender: "bruno" }]);
+                speak(reply);
             } catch (error) {
-                console.error("Error processing voice message:", error);
+                console.error("Error chatting with Gemini:", error);
             }
         };
     };

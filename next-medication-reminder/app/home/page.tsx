@@ -10,10 +10,12 @@ export default function HomePage() {
     const [name, setName] = useState("");
     const [currentDay, setCurrentDay] = useState(1);
     const [avatarName, setAvatarName] = useState("Bruno Bear");
+    const [exp, setExp] = useState(120);
+    const [money, setMoney] = useState(50);
 
     // Hardcoded stats
-    const EXP = 120;
-    const money = 50;
+    const earnedExp = 120;
+    const earnedMoney = 50;
     const totalTasks = 4;
 
     // Avatar options
@@ -70,6 +72,8 @@ export default function HomePage() {
         const selectedAvatar = sessionStorage.getItem("selectedAvatar") || "1";
         const userName = sessionStorage.getItem("userName") || "";
         const savedDay = sessionStorage.getItem("currentDay");
+        const savedExp = sessionStorage.getItem("exp") || "120";
+        const savedMoney = sessionStorage.getItem("money") || "50";
 
         // Ensure valid avatar selection
         const avatarIndex = parseInt(selectedAvatar) - 1;
@@ -82,6 +86,8 @@ export default function HomePage() {
 
         // Update To-Do list with correct avatar name
         const savedTasks = sessionStorage.getItem("tasks");
+        setExp(parseInt(savedExp));
+        setMoney(parseInt(savedMoney));
         setTasks(
             savedTasks
                 ? JSON.parse(savedTasks)
@@ -160,6 +166,24 @@ export default function HomePage() {
                     );
 
                     setTimeout(() => {
+                        alert("🎉 Congrats! You earned $50 and 120 EXP! 🎉");
+
+                        // Update stats and save in session storage
+                        setExp((prevExp) => {
+                            const newExp = prevExp + earnedExp;
+                            sessionStorage.setItem("exp", newExp.toString());
+                            return newExp;
+                        });
+
+                        setMoney((prevMoney) => {
+                            const newMoney = prevMoney + earnedMoney;
+                            sessionStorage.setItem(
+                                "money",
+                                newMoney.toString()
+                            );
+                            return newMoney;
+                        });
+
                         setCurrentDay((prevDay) => {
                             const newDay = prevDay + 1;
                             sessionStorage.setItem(
@@ -272,7 +296,7 @@ export default function HomePage() {
             {/* Bottom Right Section (Stats Box + Shop Button) */}
             <div className={styles.bottomRightContainer}>
                 <div className={styles.statsBox}>
-                    <p>⭐ EXP: {EXP}</p>
+                    <p>⭐ EXP: {exp}</p>
                     <p>💰 Money: ${money}</p>
                     <p>📅 Recovery Day: {currentDay}</p>
                 </div>

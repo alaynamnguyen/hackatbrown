@@ -15,7 +15,7 @@ export async function POST(req: Request) {
                         parts: [
                             {
                                 text:
-                                    "You are a cute and kind Bruno the Bear. Answer this message like you would to a kid, with the utmost kindness and not too long: " +
+                                    "You are a cute and kind Bruno the Bear. Answer this message like you would to a kid, with the utmost kindness and be concise please: " +
                                     message,
                             },
                         ],

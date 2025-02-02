@@ -7,14 +7,16 @@ import styles from "../page.module.css";
 export default function HomePage() {
     const router = useRouter();
     const [avatar, setAvatar] = useState("1");
-    const [name, setName] = useState("Player"); // Default name to prevent undefined
+    const [name, setName] = useState("");
     const [currentDay, setCurrentDay] = useState(1);
     const [avatarName, setAvatarName] = useState("Bruno Bear");
+    const [exp, setExp] = useState(120);
+    const [money, setMoney] = useState(50);
 
     // Hardcoded stats
-    const EXP = 120;
-    const money = 50;
     const totalTasks = 4;
+    const earnedExp = 120;
+    const earnedMoney = 50;
 
     // Avatar options
     const avatarNames = ["Peppa", "Bluey", "Patrick"];
@@ -26,14 +28,35 @@ export default function HomePage() {
         praise: string;
     }
 
-    const [tasks, setTasks] = useState<Task[]>([]);
+    const [tasks, setTasks] = useState<Task[]>([
+        {
+            text: "💊 Take 1 pill of ibuprofen",
+            completed: false,
+            praise: "Great job taking your medication safely!",
+        },
+        {
+            text: "💧 Drink 1 glass of water",
+            completed: false,
+            praise: "Great job staying hydrated!",
+        },
+        {
+            text: "❤️ Log how you're feeling",
+            completed: false,
+            praise: "Great job letting me know how you feel!",
+        },
+        {
+            text: `😊 Check in with ${avatarName}`,
+            completed: false,
+            praise: "Great job checking in!",
+        },
+    ]);
 
     // Track completed tasks
     const currentTaskCount = tasks.filter((task) => task.completed).length;
 
     // Typing effect states
     const [messageIndex, setMessageIndex] = useState(0);
-    const [typedMessage, setTypedMessage] = useState("Loading...");
+    const [typedMessage, setTypedMessage] = useState("Let's get started!");
     const [showChoices, setShowChoices] = useState(false);
     const [resetMessage, setResetMessage] = useState(false);
 
@@ -48,6 +71,8 @@ export default function HomePage() {
         const selectedAvatar = sessionStorage.getItem("selectedAvatar") || "1";
         const userName = sessionStorage.getItem("userName") || "Player"; // Default to "Player"
         const savedDay = sessionStorage.getItem("currentDay") || "1";
+        const savedExp = sessionStorage.getItem("exp") || "120";
+        const savedMoney = sessionStorage.getItem("money") || "50";
 
         // Ensure valid avatar selection
         const avatarIndex = parseInt(selectedAvatar) - 1;
@@ -57,6 +82,8 @@ export default function HomePage() {
         setName(userName);
         setCurrentDay(parseInt(savedDay));
         setAvatarName(resolvedAvatarName);
+        setExp(parseInt(savedExp));
+        setMoney(parseInt(savedMoney));
 
         // Set default tasks to prevent undefined behavior
         const defaultTasks = [
@@ -87,34 +114,6 @@ export default function HomePage() {
         setTypedMessage(messages[0]); // Ensure proper first message
     }, []);
 
-    // Typing effect handler
-    useEffect(() => {
-        if (messageIndex >= messages.length) {
-            setShowChoices(true);
-            return;
-        }
-
-        setTypedMessage(""); // Reset message
-        let charIndex = 0;
-        const interval = setInterval(() => {
-            setTypedMessage((prev) => prev + messages[messageIndex][charIndex]);
-            charIndex++;
-
-            if (charIndex === messages[messageIndex].length) {
-                clearInterval(interval);
-                setTimeout(() => {
-                    if (messageIndex < messages.length - 1) {
-                        setMessageIndex((prev) => prev + 1);
-                    } else {
-                        setShowChoices(true);
-                    }
-                }, 1000);
-            }
-        }, 50);
-
-        return () => clearInterval(interval);
-    }, [messageIndex]);
-
     // Handle task completion with praise message
     const toggleTask = (index: number): void => {
         if (!tasks[index].completed) {
@@ -123,7 +122,7 @@ export default function HomePage() {
             setTasks(updatedTasks);
             sessionStorage.setItem("tasks", JSON.stringify(updatedTasks));
 
-            // Set praise message for completed task
+            // Set immediate praise message
             setTypedMessage(tasks[index].praise);
 
             // Check if all tasks are complete, then reset for the next day
@@ -135,6 +134,24 @@ export default function HomePage() {
                     );
 
                     setTimeout(() => {
+                        alert("🎉 Congrats! You earned $50 and 120 EXP! 🎉");
+
+                        // Update stats and save in session storage
+                        setExp((prevExp) => {
+                            const newExp = prevExp + earnedExp;
+                            sessionStorage.setItem("exp", newExp.toString());
+                            return newExp;
+                        });
+
+                        setMoney((prevMoney) => {
+                            const newMoney = prevMoney + earnedMoney;
+                            sessionStorage.setItem(
+                                "money",
+                                newMoney.toString()
+                            );
+                            return newMoney;
+                        });
+
                         setCurrentDay((prevDay) => {
                             const newDay = prevDay + 1;
                             sessionStorage.setItem(
@@ -186,7 +203,7 @@ export default function HomePage() {
 
             {/* Speech Bubble */}
             <div className={styles.speechBubble}>
-                <p>{typedMessage || "Loading..."}</p>
+                <p>{typedMessage}</p>
             </div>
 
             {/* Task Choices (Emoji Only) */}
@@ -210,7 +227,7 @@ export default function HomePage() {
             {/* Bottom Right Section (Stats Box + Shop Button) */}
             <div className={styles.bottomRightContainer}>
                 <div className={styles.statsBox}>
-                    <p>⭐ EXP: {EXP}</p>
+                    <p>⭐ EXP: {exp}</p>
                     <p>💰 Money: ${money}</p>
                     <p>📅 Recovery Day: {currentDay}</p>
                 </div>

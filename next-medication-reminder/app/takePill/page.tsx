@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useContext, useRef, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import styles from "../page.module.css";
+import { TaskStatusContext } from "../TaskStatusContext"; // adjust path as needed
 
 export default function PillDetectionPage() {
     const [recording, setRecording] = useState(false);
@@ -13,6 +14,7 @@ export default function PillDetectionPage() {
     const recordedChunks = useRef<BlobPart[]>([]);
     const streamRef = useRef<MediaStream | null>(null);
     const router = useRouter();
+    const { setPillDetected } = useContext(TaskStatusContext);
 
     useEffect(() => {
         const setupCamera = async () => {
@@ -132,20 +134,22 @@ export default function PillDetectionPage() {
                     {pillTaken && (
                         <button
                             className={styles.finishButton}
-                            onClick={() =>
-                                router.push(
-                                    `/home?taskIndex=0&pillDetected=true`
-                                )
-                            }
+                            onClick={() => {
+                                // Update the shared context to indicate the pill task is complete.
+                                setPillDetected(true);
+                                router.push("/home");
+                            }}
                         >
                             ✅ Finish
                         </button>
                     )}
                     <button
                         className={styles.cancelButton}
-                        onClick={() =>
-                            router.push(`/home?taskIndex=0&pillDetected=false`)
-                        }
+                        onClick={() => {
+                            // For cancel we can explicitly set to false (or simply reset to null)
+                            setPillDetected(false);
+                            router.push("/home");
+                        }}
                     >
                         ❌ Cancel
                     </button>

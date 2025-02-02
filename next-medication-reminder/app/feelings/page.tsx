@@ -8,7 +8,11 @@ export default function FeelingsPage() {
     const [selectedFeeling, setSelectedFeeling] = useState("");
     const router = useRouter();
 
-    const handleSelectFeeling = (feeling) => {
+    interface Feeling {
+        feeling: string;
+    }
+
+    const handleSelectFeeling = (feeling: Feeling["feeling"]) => {
         setSelectedFeeling(feeling);
     };
 

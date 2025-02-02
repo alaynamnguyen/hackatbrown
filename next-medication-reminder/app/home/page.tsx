@@ -1,8 +1,8 @@
 "use client";
-
-import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useContext, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import styles from "../page.module.css";
+import { TaskStatusContext } from "../TaskStatusContext"; // adjust the path as needed
 
 // Define the Task interface
 interface Task {
@@ -12,17 +12,17 @@ interface Task {
 }
 
 export default function HomePage() {
-    const searchParams = useSearchParams();
     const router = useRouter();
-    // Query parameters for finishing tasks:
-    // - For check‑in tasks we use `complete`
-    // - For pill detection (medication) we use `pillDetected`
-    const complete = searchParams.get("complete");
-    const pillDetectedParam = searchParams.get("pillDetected");
+    const {
+        pillDetected,
+        setPillDetected,
+        checkInComplete,
+        setCheckInComplete,
+    } = useContext(TaskStatusContext);
 
     // -------------------------------------------------------------------
     // TASK STATE (with initial tasks)
-    // Note: We are replacing the original medication task handler with our pill detection
+    // Note: The first task now is the pill detection task.
     const [tasks, setTasks] = useState<Task[]>([
         {
             text: "💊 Take 1 pill of ibuprofen",
@@ -46,9 +46,24 @@ export default function HomePage() {
         },
     ]);
 
-    // If the check‑in page returns with complete=true, update the "Check in" task
+    // When the shared context indicates pill detection is complete,
+    // mark the pill task as complete and then reset the variable.
     useEffect(() => {
-        if (complete === "true") {
+        if (pillDetected === true) {
+            const updatedTasks = tasks.map((task) =>
+                task.text.includes("💊") ? { ...task, completed: true } : task
+            );
+            setTasks(updatedTasks);
+            sessionStorage.setItem("tasks", JSON.stringify(updatedTasks));
+            // Reset so that we don’t re‐process it on re‑render
+            setPillDetected(null);
+        }
+    }, [pillDetected, tasks, setPillDetected]);
+
+    // Similarly, when the shared context indicates check‑in is complete,
+    // mark the check‑in task as complete and then reset the variable.
+    useEffect(() => {
+        if (checkInComplete === true) {
             const updatedTasks = tasks.map((task) =>
                 task.text.includes("Check in")
                     ? { ...task, completed: true }
@@ -56,19 +71,9 @@ export default function HomePage() {
             );
             setTasks(updatedTasks);
             sessionStorage.setItem("tasks", JSON.stringify(updatedTasks));
+            setCheckInComplete(null);
         }
-    }, [complete, tasks]);
-
-    // If the PillDetectionPage returns with pillDetected=true, update the medication task
-    useEffect(() => {
-        if (pillDetectedParam === "true") {
-            const updatedTasks = tasks.map((task) =>
-                task.text.includes("💊") ? { ...task, completed: true } : task
-            );
-            setTasks(updatedTasks);
-            sessionStorage.setItem("tasks", JSON.stringify(updatedTasks));
-        }
-    }, [pillDetectedParam, tasks]);
+    }, [checkInComplete, tasks, setCheckInComplete]);
 
     // Other state values (avatar, name, stats, etc.)
     const [avatar, setAvatar] = useState("1");
@@ -179,9 +184,9 @@ export default function HomePage() {
     // ─── HANDLER FUNCTIONS FOR EACH TASK ──────────────────────────────
 
     // 1. Pill detection (medication) task handler.
-    //    Instead of immediately toggling the task, route to the PillDetectionPage.
+    //    Route to the Take Pill page.
     const handlePillTask = () => {
-        router.push(`/takePill?taskIndex=0`);
+        router.push("/takePill"); // No query parameter now!
     };
 
     // 2. Water task handler (skeleton)
@@ -197,9 +202,9 @@ export default function HomePage() {
     };
 
     // 4. Check in with avatar task handler:
-    //    Route to the BrunoCheckIn page.
+    //    Route to the Bruno Check‑in page.
     const handleCheckInTask = () => {
-        router.push(`/brunoCheckIn?taskIndex=3`);
+        router.push("/brunoCheckIn"); // No query parameters now!
     };
 
     // Generic toggler for tasks (used by some handlers)
@@ -361,7 +366,7 @@ export default function HomePage() {
                     ))}
                 </ul>
             </div>
-            <div onClick={resetTasks}>kaudhkasjhdkajh</div>
+
             {/* Bottom Right Section (Stats Box + Shop Button) */}
             <div className={styles.bottomRightContainer}>
                 <div className={styles.statsBox}>

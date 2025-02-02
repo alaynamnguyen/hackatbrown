@@ -1,17 +1,19 @@
+"use client";
 import "./globals.css";
 
-export const metadata = {
-    title: "HealQuest",
-    description:
-        "A game for post-surgery pediatric patients to heal through play!",
-};
+import React from "react";
+import { TaskStatusProvider } from "./TaskStatusContext"; // adjust the path as needed
 
-import { ReactNode } from "react";
-
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default function RootLayout({
+    children,
+}: {
+    children: React.ReactNode;
+}) {
     return (
-        <html lang="en">
-            <body>{children}</body>
+        <html>
+            <body>
+                <TaskStatusProvider>{children}</TaskStatusProvider>
+            </body>
         </html>
     );
 }

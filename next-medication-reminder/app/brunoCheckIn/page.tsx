@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useContext, useState } from "react";
+import { useRouter } from "next/navigation";
 import styles from "../page.module.css";
+import { TaskStatusContext } from "../TaskStatusContext"; // adjust path
 
 export default function BrunoChatPage() {
     const router = useRouter();
-    const searchParams = useSearchParams();
-    const taskIndex = searchParams.get("taskIndex"); // ✅ Get the task index
+    const { setCheckInComplete } = useContext(TaskStatusContext);
     const [messages, setMessages] = useState([
         {
             text: "Hello! I'm Bruno the Bear 🐻. How are you feeling today?",
@@ -71,25 +71,25 @@ export default function BrunoChatPage() {
                 Send
             </button>
 
-            {/* ✅ "Finish" Button - Appears only if a message was sent */}
+            {/* "Finish" Button appears only if a message was sent */}
             {messageSent && (
                 <button
-                    onClick={() =>
-                        router.push(
-                            `/home?taskIndex=${taskIndex}&complete=true`
-                        )
-                    }
+                    onClick={() => {
+                        setCheckInComplete(true);
+                        router.push("/home");
+                    }}
                     className={styles.finishButton}
                 >
                     ✅ Finish
                 </button>
             )}
 
-            {/* ✅ "Cancel" Button - Always available */}
+            {/* "Cancel" Button is always available */}
             <button
-                onClick={() =>
-                    router.push(`/home?taskIndex=${taskIndex}&complete=false`)
-                }
+                onClick={() => {
+                    setCheckInComplete(false);
+                    router.push("/home");
+                }}
                 className={styles.cancelButton}
             >
                 ❌ Cancel
